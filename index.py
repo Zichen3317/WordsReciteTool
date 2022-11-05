@@ -11,7 +11,7 @@ import CSVTool
 import traceback
 import os
 import random
-Ver = '1.0_Alpha'
+Ver = '1.0.1_Alpha'
 
 
 def main():
@@ -23,19 +23,19 @@ def main():
     if CMD == 'W':
         # 录入模式
         f_name = input('File_Name?\n>>>')
-        try:
-            # 初始化
-            f_path = '.\\%s.csv' % f_name
-            CSVtool = CSVTool.Tool(f_path)
-            if os.path.exists(f_path) == True:
-                model = 'Add'
-            else:
-                model = 'Create'
-            print(
-                '\n==========\nInitialization complete\nModel:%s\n==========\nWord?(Enter \'COMPLETE\' to complete)' % model)
-            while True:
-                Word_en = input('>>>')
-                if Word_en != 'COMPLETE':
+        # 初始化
+        f_path = '.\\%s.csv' % f_name
+        CSVtool = CSVTool.Tool(f_path)
+        if os.path.exists(f_path) == True:
+            model = 'Add'
+        else:
+            model = 'Create'
+        print(
+            '\n==========\nInitialization complete\nModel:%s\n==========\nWord?(Enter \'COMPLETE\' to complete)' % model)
+        while True:
+            Word_en = input('>>>')
+            if Word_en != 'COMPLETE':
+                try:  # 有可能出现录入错误,若此单词录入错误就报错，然后继续
                     Word_zh = baidu_translate.translate(Word_en)
                     # 注意如果文件已经存在，则调用不同的方法，要求的输入数据格式不同
                     if os.path.exists(f_path) == True:
@@ -44,18 +44,19 @@ def main():
                         IN_Content_Dict_list.append(
                             {'en': Word_en, 'zh': Word_zh})
                     print('{} - {} - ✓'.format(Word_en, Word_zh))
-                else:
-                    break
-            # 注意如果文件已经存在就不再重复写入
-            if os.path.exists(f_path) == True:  # 存在
-                CSVtool.ADD(IN_Content_list)
-                print('[Add]File_Path:{} - Write - ✓'.format(f_name+'.csv'))
-            else:  # 不存在
-                CSVtool.WRITE(header_list, IN_Content_Dict_list)
-                print('[Create]File_Path:{} - Write - ✓'.format(f_name+'.csv'))
+                except:
+                    traceback.print_exc()
+                    pass
+            else:
+                break
+        # 注意如果文件已经存在就不再重复写入
+        if os.path.exists(f_path) == True:  # 存在
+            CSVtool.ADD(IN_Content_list)
+            print('[Add]File_Path:{} - Write - ✓'.format(f_name+'.csv'))
+        else:  # 不存在
+            CSVtool.WRITE(header_list, IN_Content_Dict_list)
+            print('[Create]File_Path:{} - Write - ✓'.format(f_name+'.csv'))
 
-        except:
-            traceback.print_exc()
     elif CMD == 'R':
         # 背诵模式
         f_name = input('\nFile_Name?\n>>>')
@@ -104,7 +105,7 @@ def main():
                         print('\n[{}/{}]\nYour Score: {}'.format(Ori_Num -
                                                                  len(Wrong_list_Copy), Ori_Num, Score))
                         print(
-                            'Congratulation! %s\'s words has been completed!' % f_name)
+                            'Congratulation! %s\'s words have been completed!' % f_name)
                         break
             else:
                 print('ERROR:File Not Exist!')
