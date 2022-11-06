@@ -11,7 +11,7 @@ import CSVTool
 import traceback
 import os
 import random
-Ver = '1.0.1_Alpha'
+Ver = '1.0.2_Alpha'
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     IN_Content_list = []
     header_list = ["en", "zh"]  # 表头
     print('WordsReciteTool %s Service Start' % Ver)
-    CMD = input('R/W ?\n>>>')
+    CMD = input('R/W ?\nTip:输入R进入背诵模式,W进入录入模式\n>>>')
     if CMD == 'W':
         # 录入模式
         f_name = input('File_Name?\n>>>')
@@ -27,11 +27,11 @@ def main():
         f_path = '.\\%s.csv' % f_name
         CSVtool = CSVTool.Tool(f_path)
         if os.path.exists(f_path) == True:
-            model = 'Add'
+            model = '追加'
         else:
-            model = 'Create'
+            model = '新创建'
         print(
-            '\n==========\nInitialization complete\nModel:%s\n==========\nWord?(Enter \'COMPLETE\' to complete)' % model)
+            '\n==========\n已完成初始化\n模式:%s\n==========\n请输入需要录入的单词(输入 /finish 来完成录入)' % model)
         while True:
             Word_en = input('>>>')
             if Word_en != 'COMPLETE':
@@ -52,21 +52,22 @@ def main():
         # 注意如果文件已经存在就不再重复写入
         if os.path.exists(f_path) == True:  # 存在
             CSVtool.ADD(IN_Content_list)
-            print('[Add]File_Path:{} - Write - ✓'.format(f_name+'.csv'))
+            print('[追加]单词本名:{} - 写入 - ✓'.format(f_name+'.csv'))
         else:  # 不存在
             CSVtool.WRITE(header_list, IN_Content_Dict_list)
-            print('[Create]File_Path:{} - Write - ✓'.format(f_name+'.csv'))
-
+            print(
+                '[新创建]单词本名:{} - 写入 - ✓\nTip:单词本已创建在本程序的同级文件夹内，除删除之外请勿随意移动此文件'.format(f_name+'.csv'))
+        os.system('pause')
     elif CMD == 'R':
         # 背诵模式
-        f_name = input('\nFile_Name?\n>>>')
+        f_name = input('\n请输入单词本名\n>>>')
         try:
             # 初始化
             f_path = '.\\%s.csv' % f_name
 
             if os.path.exists(f_path) == True:
                 print(
-                    '\n==========\nInitialization complete\n==========\n')
+                    '\n==========\n已完成初始化\n==========\n')
                 CSVtool = CSVTool.Tool(f_path)
                 Ori_list = CSVtool.READ()
                 del Ori_list[0]  # 第一项是表头，去掉
@@ -102,13 +103,13 @@ def main():
                     elif len(Ori_list) == 0 and len(Wrong_list) == 0:
                         Score = round((Ori_Num-len(Wrong_list_Copy)) /
                                       Ori_Num * 100, 1)
-                        print('\n[{}/{}]\nYour Score: {}'.format(Ori_Num -
-                                                                 len(Wrong_list_Copy), Ori_Num, Score))
+                        print('\n[{}/{}]\n你的分数: {}'.format(Ori_Num -
+                                                           len(Wrong_list_Copy), Ori_Num, Score))
                         print(
-                            'Congratulation! %s\'s words have been completed!' % f_name)
+                            '恭喜你! %s 的单词已经全部完成!' % f_name)
                         break
             else:
-                print('ERROR:File Not Exist!')
+                print()('错误:没有找到单词本 %s（单词本应与本程序在同一级文件夹内）!' % f_name)
             os.system('pause')
         except:
             traceback.print_exc()
