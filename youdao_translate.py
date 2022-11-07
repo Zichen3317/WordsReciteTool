@@ -19,9 +19,12 @@ class translate:
 
     def Get_Zh_trans(self):
         try:
-            Zh_trans = self.Data.find(
-                'div', {'class': 'trans-container'}).find('ul').find('li').string
-            return Zh_trans
+            Lst_temp = []
+            Zh_trans_lst = self.Data.find(
+                'div', {'class': 'trans-container'}).find('ul').find_all('li')
+            for i in Zh_trans_lst:
+                Lst_temp.append(i.string)
+            return '|'.join(Lst_temp)  # 中文翻译可能有多个词性
         except AttributeError:
             print('ERROR:无法查到%s的中文翻译！' % self.word)
 
@@ -38,6 +41,7 @@ class translate:
             return Pronounce_list
         except AttributeError:
             print('ERROR:无法查到%s的读音！' % self.word)
+            return None
 
     # 例句
 
@@ -57,6 +61,7 @@ class translate:
             return Example_Sentences_list
         except AttributeError:
             print('ERROR:无法查到%s的英文解释' % self.word)
+            return None
 
 
 print(translate('escalate').Get_Pronounce())
