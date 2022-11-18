@@ -62,6 +62,3 @@ class translate:
         except AttributeError:
             print('ERROR:无法查到%s的英文解释' % self.word)
             return None
-
-
-print(translate('escalate').Get_Pronounce())

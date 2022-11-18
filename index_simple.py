@@ -70,11 +70,13 @@ def main():
             if os.path.exists(f_path) == True:
                 print(
                     '\n==========\n已完成初始化\n==========\n')
+
                 CSVtool = CSVTool.Tool(f_path)
                 Ori_list = CSVtool.READ()
                 del Ori_list[0]  # 第一项是表头，去掉
                 Wrong_list = []  # 用于存储拼错的单词的列表，参与单词重拼写
                 Ori_Num = len(Ori_list)  # 总单词数
+                print('共有%s个单词'%Ori_Num)
                 Wrong_list_Copy = []  # 用于统计错误的单词数
                 while True:
                     # 如果原单词本已默写完毕且错词本无错词则结束
