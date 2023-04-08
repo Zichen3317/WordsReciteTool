@@ -1,4 +1,4 @@
-- - # 单词背诵工具 WordReciteTool
+# 单词背诵工具 WordReciteTool
 
 ![](https://img.shields.io/github/v/release/Zichen3317/WordsReciteTool?style=social)  ![](https://img.shields.io/badge/%E4%BD%9C%E8%80%85-ZiChen-yellow?style=social)
 
