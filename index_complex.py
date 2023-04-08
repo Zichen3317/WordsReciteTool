@@ -11,9 +11,9 @@ import CSVTool
 import traceback
 import os
 import random
-
+from datetime import datetime
 # 复杂版本
-Ver = '1.2.1_complex_Alpha'
+Ver = '1.2.4_complex_Alpha'
 
 
 def Model_Write():
@@ -75,7 +75,6 @@ def Model_Write():
             print('[追加]单词本名:{} - 写入 - ✓'.format(f_name+'.csv'))
         else:  # 不存在
             CSVtool.WRITE(header_list, IN_Content_Dict_list)
-            CSVtool.ADD(IN_Content_list)
             print(
                 '[新创建]单词本名:{} - 写入 - ✓\nTip:单词本已创建在本程序的同级文件夹内，除删除之外请勿随意移动此文件'.format(f_name+'.csv'))
         os.system('pause')
@@ -152,13 +151,17 @@ def Model_Recite():
                 if len(Ori_list) > 0:
                     RNum = random.choice(range(0, len(Ori_list)))
                     WordGroup = Ori_list.pop(RNum)  # 直接取出来
-                    Answer = input('\nEN: %s\nZH >>> ' % WordGroup[1])
+                    Answer = input('\nZH: %s\n EN>>> ' % WordGroup[1])
                     # 判断答案，如果错误则加入错题处
                     if Answer == WordGroup[0]:
                         print('Right✓')
                         if len(WordGroup) >= 4:
                             print('-----\nProunce: %s\nExample Sentences:%s\n-----\n' %
                                   (WordGroup[2], WordGroup[3]))
+                    elif Answer == '/left':  # 2023/03/29 15:37:10 ➕显示剩余单词数
+                        print('Left: %s' % len(Ori_list))  # 显示剩余单词数
+                        Ori_list.append(WordGroup)  # 将单词放回待测试列表
+
                     else:
                         print('Wrong×')
                         Wrong_list.append(WordGroup)
@@ -169,7 +172,7 @@ def Model_Recite():
                           len(Wrong_list))
                     RNum = random.choice(range(0, len(Wrong_list)))
                     WordGroup = Wrong_list.pop(RNum)  # 直接取出来
-                    Answer = input('\nEN: %s\nZH >>> ' % WordGroup[1])
+                    Answer = input('\nZH: %s\n EN>>> ' % WordGroup[1])
                     # 判断答案，如果错误则加入错题处
                     if Answer == WordGroup[0]:
                         print('Right✓')
@@ -177,14 +180,31 @@ def Model_Recite():
                         if len(WordGroup) >= 4:
                             print('-----\nProunce: %s\nExample Sentences:%s\n-----\n' %
                                   (WordGroup[2], WordGroup[3]))
-                    elif Answer == '/save':
-                        # 将错题本保存下来
-                        header = {'en','zh','Pronounce','Example_Sentences'}
-                        CSVTool.Tool('./Wrong-%s-%s.csv' %
-                                     (len(Wrong_list_Copy), f_name)).WRITE(header, {})
-                        CSVTool.Tool('./Wrong-%s-%s.csv' %
-                                     (len(Wrong_list_Copy), f_name)).ADD(Wrong_list_Copy)
+                    elif Answer == '/save':  # 将错题本保存下来
+                        header = {'en', 'zh', 'Pronounce', 'Example_Sentences'}
+                        # 2023/03/14 21:41:18 ➕错题本文件名含时间，便于辨认
+                        SaveTime = str(datetime.today()).split(
+                            '.')[0].replace(' ', '-').replace(':', '-')
+                        CSVTool.Tool('./Wrong-%s-%s-%s.csv' %
+                                     (len(Wrong_list_Copy), f_name, SaveTime)).WRITE(header, {})
+                        CSVTool.Tool(
+                            './Wrong-%s-%s-%s.csv' % (len(Wrong_list_Copy), f_name, SaveTime)).ADD(Wrong_list_Copy)
+                        print('[debug]错题已保存至./Wrong-%s-%s-%s.csv' %
+                              (len(Wrong_list_Copy), f_name, SaveTime))
                         Wrong_list.append(WordGroup)
+                    # 2023/04/02 08:30:43 ➕将剩余错误的单词显示出来
+                    elif Answer == '/show':
+                        if len(Wrong_list) > 0:
+                            a = 1
+                            # 记得把取出来的那个单词加回去
+                            Wrong_list.append(WordGroup)
+                            for i in Wrong_list:
+                                print('\nNo.%s\nen:%s,zh:%s %s\n%s' %
+                                      (a, i[0], i[1], i[2], i[3]))
+                                print()
+                                a += 1
+                        else:
+                            print('[debug]剩余单词显示错误！')
 
                     else:
                         print('Wrong×')
@@ -198,7 +218,7 @@ def Model_Recite():
                         '恭喜你! %s 的单词/短语已经全部完成!' % f_name)
                     break
         else:
-            print()('错误:没有找到单词/短语本 %s（单词/短语本应与本程序在同一级文件夹内）!' % f_name)
+            print('错误:没有找到单词/短语本 %s（单词/短语本应与本程序在同一级文件夹内）!' % f_name)
         os.system('pause')
     except:
         traceback.print_exc()
@@ -211,16 +231,65 @@ def Model_Transform():
     '''
 
 
+def Model_Split():
+    '''
+    切片模式
+    将复杂模式单词本中的单词切割成特定数量的单词本，
+        便于背诵
+    '''
+    # 背诵模式
+    f_name = input('\n请输入单词/短语本名\n>>>')
+    try:
+        # 初始化
+        f_path = '.\\%s.csv' % f_name
+
+        if os.path.exists(f_path) == True:
+            print(
+                '\n==========\n已完成初始化\n==========\n')
+
+            CSVtool = CSVTool.Tool(f_path)
+            Ori_list = CSVtool.READ()
+            Ori_header = Ori_list[0]  # 储存表头，分片完每个单词本都需要加入
+            del Ori_list[0]  # 第一项是表头，不要了
+            Ori_Num = len(Ori_list)  # 总单词数
+            print('共有%s个单词/短语\n' % Ori_Num)
+
+            Split_num = int(input('\n需要切割成几部分？\n>>>'))
+            Signal_num = len(Ori_list)//Split_num
+
+            for i in range(1, Split_num+1):
+                if i != Split_num:  # 不是最后一部份
+                    CSVtool_S = CSVTool.Tool(
+                        './%s_%s_%s.csv' % (f_name, Signal_num, i))
+                    CSVtool_S.WRITE(Ori_header, [{'en': i[0], 'zh': i[1],
+                                                  'Pronounce': i[2], 'Example_Sentences': i[3]}
+                                                 for i in Ori_list[(i-1)*Signal_num:i*Signal_num]])
+                else:  # 最后一部份
+                    CSVtool_S = CSVTool.Tool(
+                        './%s_%s_%s.csv' % (f_name, Signal_num, i))
+                    CSVtool_S.WRITE(Ori_header, [{'en': i[0], 'zh': i[1],
+                                                  'Pronounce': i[2], 'Example_Sentences': i[3]}
+                                                 for i in Ori_list[(i-1)*Signal_num:]])
+
+            print('[debug]切片对象:%s 丨切片数: %s 切片完毕✓' % (f_name, Split_num))
+
+        else:
+            print('错误:没有找到单词/短语本 %s（单词/短语本应与本程序在同一级文件夹内）!' % f_name)
+        os.system('pause')
+    except:
+        traceback.print_exc()
+
+
 def main():
     print('WordsReciteTool %s Service Start' % Ver)
     while True:
-        CMD = input('R/W/T ?\nTip:输入R进入背诵模式,W进入录入模式,T进入转换模式\n>>>')
+        CMD = input('R/W/S ?\nTip:输入R进入背诵模式,W进入录入模式,S进入切片模式\n>>>')
         if CMD == 'W':
             Model_Write()
         elif CMD == 'R':
             Model_Recite()
-        elif CMD == 'T':
-            Model_Transform()
+        elif CMD == 'S':
+            Model_Split()
         elif CMD == '/exit':
             break
 
